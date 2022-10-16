@@ -119,10 +119,11 @@ import torchvision.transforms as transforms
 
 
 
-num_epochs = 4500
+num_epochs = 1000
 num_classes = 10
 batch_size = 128
-learning_rate = 0.02
+learning_rate = 1e-9
+q_value = 10
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -177,7 +178,7 @@ print(free_params)
 
 
 criterion = nn.CrossEntropyLoss().cuda()
-optimizer = SMD_opt.SMD_qnorm(model.parameters(), lr=learning_rate, q=2)
+optimizer = SMD_opt.SMD_qnorm(model.parameters(), lr=learning_rate, q=q_value)
 
 total_step = len(trainloader)
 print(total_step)
