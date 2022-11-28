@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import math
 
 class Block(nn.Module):
     '''expand + depthwise + pointwise'''
@@ -57,6 +58,8 @@ class MobileNetV2(nn.Module):
         self.bn2 = nn.BatchNorm2d(1280)
         self.linear = nn.Linear(1280, num_classes)
 
+        self._init_weight()
+
     def _make_layers(self, in_planes):
         layers = []
         for expansion, out_planes, num_blocks, stride in self.cfg:
@@ -65,6 +68,18 @@ class MobileNetV2(nn.Module):
                 layers.append(Block(in_planes, out_planes, expansion, stride))
                 in_planes = out_planes
         return nn.Sequential(*layers)
+
+    def _init_weight(self):
+        print("initializing weights")
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                m.weight.data.normal_(0.0, 0.01)
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.normal_(0.0, 0.01)
+                m.bias.data.fill_(0)
+            elif isinstance(m, nn.Linear):
+                m.weight.data.uniform_(-0.01, 0.01)
+                m.bias.data.uniform_(-0.1, 0.1)
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))

@@ -8,17 +8,15 @@ import math
 
 class SMD_compress(Optimizer):
 
-    def __init__(self, params, lr=0.01, momentum=0, weight_decay = 0, dampening=0, eps=0.1):
+    def __init__(self, params, lr=0.01, momentum=0, weight_decay = 0, dampening=0):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= momentum:
             raise ValueError("Invalid momentum value: {}".format(momentum))
         if not 0.0 <= weight_decay:
             raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
-        if not 0.0 < eps:
-            raise ValueError("Invalid eps value: {}".format(eps))
 
-        defaults = dict(lr=lr, momentum=momentum, weight_decay=weight_decay, dampening=dampening, eps=eps)
+        defaults = dict(lr=lr, momentum=momentum, weight_decay=weight_decay, dampening=dampening)
         super(SMD_compress, self).__init__(params, defaults)
     
     def __setstate__(self, state):
@@ -50,8 +48,9 @@ class SMD_compress(Optimizer):
                         buf.mul_(momentum).add_(1 - dampening, d_p)
                     d_p = buf
     #           (1+eps) norm potential function
-                update = (1+group['eps'])* (torch.abs(p.data)**group['eps']) * torch.sign(p.data) - group['lr'] * d_p
-                p.data = (torch.abs(update/(1+group['eps']))**(1/group['eps'])) * torch.sign(update)
+                eps = 0.1
+                update = (1+eps)* (torch.abs(p.data)**eps) * torch.sign(p.data) - group['lr'] * d_p
+                p.data = (torch.abs(update/(1+eps))**(1/eps)) * torch.sign(update)
 
         return loss 
     
